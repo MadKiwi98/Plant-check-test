@@ -68,6 +68,9 @@
     <div class="container">
         <h1>Dairy Shed Hygiene Checklist</h1>
         
+        <!-- Hidden logo image for use in PDF generation -->
+        <img id="logo" src="assets/Picture2.png" style="display:none;">
+
         <form id="hygiene-checklist-form">
             <!-- Farm Details Section -->
             <div class="section mb-4">
@@ -198,83 +201,28 @@
         // Correct jsPDF reference
         const jsPDF = window.jspdf.jsPDF;
 
-        const checklistItems = [
-            "Pulsator Airline", "Long Bend Elbows", "Automatic Cup and Remover", "Diaphragm", "Receiving Can",
-            "Sanitary Trap", "Main Milk Line", "Milk Line Seals in Good Condition", "Stainless Droppers", "Long Milk Rubber",
-            "Liner", "Cluster", "Cluster Seal", "Cluster Button", "Non Return Valve at Milk Pump", "Milk Pump",
-            "Filter Housing", "Plate Cooler", "Interceptor", "Receiver Airline", "Flushing Pulsator", "Air Purge Valve",
-            "Vacuum Level", "Main Airline", "Plant Drainage - Milk Pump", "Plant Drainage - Filter/s", "Plant Drainage - Plate Cooler",
-            "Plant Drainage - Vat Entry", "Plant Wash Tap", "Wash Jetters", "Centre Gland", "Test Bucket", "Inlet Valve",
-            "Non-Return Valve", "Spray Ball", "Agitator", "Silo Door", "Manhole Seal", "Vat Outlet", "Walls in Silo"
-        ];
-
-        document.addEventListener("DOMContentLoaded", () => {
-            console.log("Document loaded. Creating checklist items...");
-            createChecklistItems();
-        });
-
-        function createChecklistItems() {
-            const checklistContainer = document.getElementById('checklist-items');
-            checklistContainer.innerHTML = '';
-
-            checklistItems.forEach(item => {
-                const itemContainer = document.createElement('div');
-                itemContainer.classList.add('checklist-item');
-
-                const label = document.createElement('label');
-                label.textContent = item;
-                itemContainer.appendChild(label);
-
-                const statusSelect = document.createElement('select');
-                statusSelect.classList.add('form-select');
-                statusSelect.innerHTML = `
-                    <option value="ok">OK</option>
-                    <option value="attention-required">Attention Required</option>
-                    <option value="na">N/A</option>
-                    <option value="not-checked">Not Checked</option>
-                `;
-                itemContainer.appendChild(statusSelect);
-
-                const commentsInput = document.createElement('input');
-                commentsInput.type = 'text';
-                commentsInput.classList.add('form-control');
-                commentsInput.placeholder = 'Comments';
-                itemContainer.appendChild(commentsInput);
-
-                const imageUpload = document.createElement('input');
-                imageUpload.type = 'file';
-                imageUpload.classList.add('form-control', 'image-upload');
-                imageUpload.style.display = 'none';
-                itemContainer.appendChild(imageUpload);
-
-                statusSelect.addEventListener('change', () => {
-                    if (statusSelect.value === 'attention-required') {
-                        imageUpload.style.display = 'block';
-                    } else {
-                        imageUpload.style.display = 'none';
-                    }
-
-                    if (statusSelect.value === 'not-checked') {
-                        commentsInput.value = "Milk in Vat";
-                    } else {
-                        if (commentsInput.value === "Milk in Vat") {
-                            commentsInput.value = ""; // Clear the field if it was auto-filled by 'Not Checked'
-                        }
-                    }
-                });
-
-                checklistContainer.appendChild(itemContainer);
-            });
-        }
-
         async function generatePDF() {
             const form = document.getElementById('hygiene-checklist-form');
             let formData = new FormData(form);
             const dairyNumber = formData.get('dairy-number');
 
             let pdf = new jsPDF('p', 'pt', 'a4');
-            const logo = 'data:image/png;base64,REPLACE_WITH_YOUR_BASE64_STRING'; // Replace with your logo's base64 string
-            pdf.addImage(logo, 'PNG', 40, 10, 100, 50);
+
+            // Get the logo image from the hidden img tag
+            const logoElement = document.getElementById('logo');
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            // Draw the image on the canvas to create a data URL
+            canvas.width = logoElement.naturalWidth;
+            canvas.height = logoElement.naturalHeight;
+            context.drawImage(logoElement, 0, 0);
+            const logoDataURL = canvas.toDataURL('image/png');
+
+            // Add the logo to the PDF
+            pdf.addImage(logoDataURL, 'PNG', 40, 10, 100, 50);
+
+            // Add form details to the PDF
             pdf.setFontSize(22);
             pdf.setTextColor('#002B5C');
             pdf.text('Dairy Shed Hygiene Checklist', 40, 80);
@@ -299,104 +247,18 @@
             pdf.text(`Inspection Completed By: ${formData.get('inspection-completed-by')}`, 40, 295);
             pdf.text(`Call Type: ${formData.get('call-type')}`, 40, 310);
 
+            // Add checklist items table
             const checklistItemsDiv = document.getElementById('checklist-items').children;
-
             const checklistTable = [];
-            const images = [];
-
+            
             for (let item of checklistItemsDiv) {
                 const itemName = item.querySelector('label').textContent;
                 const status = item.querySelector('select').value;
                 const comments = item.querySelector('input[type="text"]').value;
-                const imageFile = item.querySelector('input[type="file"]').files[0];
 
-                const row = [itemName, status, comments];
-
-                if (imageFile) {
-                    const reader = new FileReader();
-                    reader.onload = function (event) {
-                        images.push({ image: event.target.result, itemName: itemName });
-                    };
-                    reader.readAsDataURL(imageFile);
-                    await new Promise((resolve) => reader.onloadend = resolve);
-                }
-
-                checklistTable.push(row);
+                checklistTable.push([itemName, status, comments]);
             }
 
-            // Generate checklist items table
             pdf.autoTable({
                 startY: 330,
-                head: [['Item', 'Status', 'Comments']],
-                body: checklistTable,
-                styles: {
-                    fontSize: 10,
-                    cellPadding: 5,
-                },
-                headStyles: {
-                    fillColor: '#002B5C',
-                    textColor: '#FFFFFF'
-                }
-            });
-
-            // Add temperature data
-            let currentY = pdf.lastAutoTable.finalY + 20;
-
-            pdf.setFont('helvetica', 'bold');
-            pdf.text('Temperature Measurements:', 40, currentY);
-            currentY += 20;
-
-            pdf.setFont('helvetica', 'normal');
-            pdf.text(`Hot Water Temp: ${formData.get('hot-water-temp')} °C`, 40, currentY);
-            currentY += 15;
-            pdf.text(`Time Taken: ${formData.get('hot-water-time')}`, 40, currentY);
-            currentY += 20;
-
-            pdf.text(`Milk Temp: ${formData.get('milk-temp')} °C`, 40, currentY);
-            currentY += 15;
-            pdf.text(`Time Taken: ${formData.get('milk-time')}`, 40, currentY);
-            currentY += 20;
-
-            // Add images below the table with proper alignment
-            if (images.length > 0) {
-                pdf.setFont('helvetica', 'bold');
-                pdf.text('Photos:', 40, currentY);
-                currentY += 20;
-
-                images.forEach((imgDetail, index) => {
-                    pdf.setFont('helvetica', 'normal');
-                    pdf.text(`Item: ${imgDetail.itemName}`, 40, currentY);
-                    currentY += 10;
-
-                    const pageHeight = pdf.internal.pageSize.height;
-
-                    // Check if adding the image exceeds the page height
-                    if (currentY + 160 > pageHeight) {
-                        pdf.addPage();
-                        currentY = 50; // Reset Y position for new page
-                    }
-
-                    pdf.addImage(imgDetail.image, 'JPEG', 40, currentY, 150, 150);
-                    currentY += 160; // Spacing for the next image
-                });
-            }
-
-            // Save PDF and upload to Firebase
-            const pdfBlob = pdf.output('blob');
-            const timestamp = new Date().toISOString().split('T')[0];
-            const uniqueId = new Date().getTime();
-            const fileName = `${dairyNumber}-form-${timestamp}-${uniqueId}.pdf`;
-            const storageRef = storage.ref(`customers/${dairyNumber}/${fileName}`);
-
-            try {
-                await storageRef.put(pdfBlob);
-                console.log('PDF uploaded successfully');
-            } catch (error) {
-                console.error('Error uploading PDF:', error);
-            }
-
-            pdf.save('Dairy_Shed_Hygiene_Checklist.pdf');
-        }
-    </script>
-</body>
-</html>
+                head
