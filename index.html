@@ -1,226 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dairy Shed Hygiene Checklist</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-    <style>
-        body {
-            background-color: #002B5C;
-            color: #FFFFFF;
-            font-family: Arial, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            margin: 0;
-        }
-        .container {
-            background-color: #002B5C;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            max-width: 800px;
-            width: 100%;
-        }
-        h1, h2 {
-            color: #FF851B;
-            text-align: center;
-        }
-        label {
-            margin-top: 10px;
-        }
-        button {
-            background-color: #FF851B;
-            color: #FFFFFF;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            display: block;
-            margin: 20px auto;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #FF4136;
-        }
-        .checklist-item {
-            margin-bottom: 30px;
-        }
-        .form-control, .form-select {
-            margin-top: 5px;
-        }
-        .version {
-            text-align: center;
-            margin-top: 20px;
-            color: #FFFFFF;
-            font-size: 12px;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-    <!-- Updated Firebase scripts -->
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-storage-compat.js"></script>
-</head>
-<body>
-    <div class="container">
-        <h1>Dairy Shed Hygiene Checklist</h1>
-        
-        <!-- Hidden logo image for use in PDF generation -->
-        <img id="logo" src="Picture2.png" style="display:none;">
+<script>
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyDr9nA44Kkej*****GUzbMDECI8cTFI",
+        authDomain: "dairy-farm-record-system.firebaseapp.com",
+        projectId: "dairy-farm-record-system",
+        storageBucket: "dairy-farm-record-system.appspot.com",
+        messagingSenderId: "422124188212",
+        appId: "1:422124188212:web:1bd31bee8d6e91e301d061"
+    };
 
-        <form id="hygiene-checklist-form">
-            <!-- Farm Details Section -->
-            <div class="section mb-4">
-                <h2>Farm Details</h2>
-                <label for="dairy-company">Dairy Company:</label>
-                <select id="dairy-company" name="dairy-company" class="form-select">
-                    <option value="fonterra">Fonterra</option>
-                    <option value="dairy-goat-coop">Dairy Goat Co-op</option>
-                    <option value="green-valley">Green Valley Dairies</option>
-                    <option value="maui-milk">Maui Milk</option>
-                    <option value="oceania">Oceania</option>
-                    <option value="ofi">OFI</option>
-                    <option value="synlait">Synlait Milk LTD</option>
-                    <option value="tatua">Tatua</option>
-                </select>
-                <label for="dairy-number">Dairy Number:</label>
-                <input type="text" class="form-control" id="dairy-number" name="dairy-number">
-                <label for="address">Address:</label>
-                <input type="text" class="form-control" id="address" name="address">
-                <label for="customer-name">Customer Name:</label>
-                <input type="text" class="form-control" id="customer-name" name="customer-name">
-                <label for="region">Region:</label>
-                <select id="region" name="region" class="form-select">
-                    <option value="northland">Northland</option>
-                    <option value="auckland">Auckland</option>
-                    <option value="waikato">Waikato</option>
-                    <option value="bay-of-plenty">Bay of Plenty</option>
-                    <option value="gisborne">Gisborne</option>
-                    <option value="hawkes-bay">Hawke's Bay</option>
-                    <option value="taranaki">Taranaki</option>
-                    <option value="manawatu-wanganui">Manawatu-Wanganui</option>
-                    <option value="wellington">Wellington</option>
-                    <option value="nelson">Nelson</option>
-                    <option value="marlborough">Marlborough</option>
-                    <option value="west-coast">West Coast</option>
-                    <option value="canterbury">Canterbury</option>
-                    <option value="otago">Otago</option>
-                    <option value="southland">Southland</option>
-                </select>
-                <label for="farm-name">Farm Name:</label>
-                <input type="text" class="form-control" id="farm-name" name="farm-name">
-                <label for="island">Island:</label>
-                <select id="island" name="island" class="form-select">
-                    <option value="north-island">North Island</option>
-                    <option value="south-island">South Island</option>
-                </select>
-                <label for="visit-date">Visit Date:</label>
-                <input type="date" class="form-control" id="visit-date" name="visit-date">
-                <label for="visit-type">Visit Type:</label>
-                <input type="text" class="form-control" id="visit-type" name="visit-type" value="Milking Plant & Milk Vat Check" readonly>
-                <label for="inspection-start-time">Inspection Start Time:</label>
-                <input type="time" class="form-control" id="inspection-start-time" name="inspection-start-time">
-                <label for="inspection-end-time">Inspection End Time:</label>
-                <input type="time" class="form-control" id="inspection-end-time" name="inspection-end-time">
-                <label for="inspection-completed-by">Inspection Completed By:</label>
-                <input type="text" class="form-control" id="inspection-completed-by" name="inspection-completed-by">
-                <label for="call-type">Call Type:</label>
-                <select id="call-type" name="call-type" class="form-select">
-                    <option value="alert">Alert</option>
-                    <option value="grade-call">Grade Call</option>
-                    <option value="regular-scheduled-visit" selected>Regular Scheduled Visit</option>
-                </select>
-            </div>
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const storage = firebase.storage();
 
-            <!-- Health & Safety Section -->
-            <div class="section mb-4">
-                <h2>Health & Safety</h2>
-                <div class="checklist-item">
-                    <label for="health-safety-status">Health & Safety Status:</label>
-                    <select id="health-safety-status" name="health-safety-status" class="form-select">
-                        <option value="ok">OK</option>
-                        <option value="attention-required">Attention Required</option>
-                        <option value="na">N/A</option>
-                        <option value="not-checked">Not Checked</option>
-                    </select>
-                    <label for="health-safety-comments">Comments:</label>
-                    <input type="text" class="form-control" id="health-safety-comments" name="health-safety-comments" placeholder="Comments">
-                    <label for="health-safety-photo" class="mt-2">Upload Photo:</label>
-                    <input type="file" class="form-control image-upload" id="health-safety-photo" name="health-safety-photo" style="display: none;">
-                </div>
-            </div>
+    // Correct jsPDF reference
+    const jsPDF = window.jspdf.jsPDF;
 
-            <!-- Checklist Items Section -->
-            <div class="section mb-4">
-                <h2>Checklist Items</h2>
-                <div id="checklist-items">
-                    <!-- Checklist items will be dynamically added here -->
-                </div>
-            </div>
+    async function generatePDF() {
+        const form = document.getElementById('hygiene-checklist-form');
+        let formData = new FormData(form);
+        const dairyNumber = formData.get('dairy-number');
 
-            <!-- Temperature Measurements Section -->
-            <div class="section mb-4">
-                <h2>Temperature Measurements</h2>
-                <div class="checklist-item">
-                    <label for="hot-water-temp">Hot Water Temp (°C):</label>
-                    <input type="number" class="form-control" id="hot-water-temp" name="hot-water-temp" step="0.1">
-                    <label for="hot-water-time">Time Taken:</label>
-                    <input type="time" class="form-control" id="hot-water-time" name="hot-water-time">
-                </div>
-                <div class="checklist-item">
-                    <label for="milk-temp">Milk Temp (°C):</label>
-                    <input type="number" class="form-control" id="milk-temp" name="milk-temp" step="0.1">
-                    <label for="milk-time">Time Taken:</label>
-                    <input type="time" class="form-control" id="milk-time" name="milk-time">
-                </div>
-            </div>
+        let pdf = new jsPDF('p', 'pt', 'a4');
 
-            <button type="button" onclick="generatePDF()">Generate PDF</button>
-        </form>
-        <div class="version">Version 4.6</div>
-    </div>
+        try {
+            // Use the direct URL from the image hosting tool
+            const logoUrl = 'https://i.postimg.cc/hjJbVKSw/Picture2.png'; // Direct link to the image
 
-    <script>
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDr9nA44Kkej*****GUzbMDECI8cTFI",
-            authDomain: "dairy-farm-record-system.firebaseapp.com",
-            projectId: "dairy-farm-record-system",
-            storageBucket: "dairy-farm-record-system.appspot.com",
-            messagingSenderId: "422124188212",
-            appId: "1:422124188212:web:1bd31bee8d6e91e301d061"
-        };
+            // Load the image from URL and add to PDF
+            const img = new Image();
+            img.crossOrigin = "anonymous";  // To handle CORS issues
+            img.src = logoUrl;
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const storage = firebase.storage();
-
-        // Correct jsPDF reference
-        const jsPDF = window.jspdf.jsPDF;
-
-        async function generatePDF() {
-            const form = document.getElementById('hygiene-checklist-form');
-            let formData = new FormData(form);
-            const dairyNumber = formData.get('dairy-number');
-
-            let pdf = new jsPDF('p', 'pt', 'a4');
-
-            try {
-                const logoElement = document.getElementById('logo');
-                const canvas = document.createElement('canvas');
-                const context = canvas.getContext('2d');
-
-                // Draw the image on the canvas to create a data URL
-                canvas.width = logoElement.naturalWidth;
-                canvas.height = logoElement.naturalHeight;
-                context.drawImage(logoElement, 0, 0);
-                const logoDataURL = canvas.toDataURL('image/png');
-
-                // Add the logo to the PDF
-                pdf.addImage(logoDataURL, 'PNG', 40, 10, 100, 50);
+            img.onload = function () {
+                // Add the logo to the PDF once the image is loaded
+                pdf.addImage(img, 'PNG', 40, 10, 100, 50);
 
                 // Add form details to the PDF
                 pdf.setFontSize(22);
@@ -275,10 +89,13 @@
 
                 // Save the PDF locally
                 pdf.save('Dairy_Shed_Hygiene_Checklist.pdf');
-            } catch (error) {
-                console.error('Error generating the PDF:', error);
-            }
+            };
+
+            img.onerror = function () {
+                console.error('Error loading the image from the specified path.');
+            };
+        } catch (error) {
+            console.error('Error generating the PDF:', error);
         }
-    </script>
-</body>
-</html>
+    }
+</script>
