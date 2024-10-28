@@ -69,7 +69,7 @@
         <h1>Dairy Shed Hygiene Checklist</h1>
         
         <!-- Hidden logo image for use in PDF generation -->
-        <img id="logo" src="Picture2.png/Picture2.png" style="display:none;">
+        <img id="logo" src="Picture2.png" style="display:none;">
 
         <form id="hygiene-checklist-form">
             <!-- Farm Details Section -->
@@ -234,4 +234,51 @@
 
                 pdf.setFont('helvetica', 'normal');
                 pdf.text(`Dairy Company: ${formData.get('dairy-company')}`, 40, 130);
-               
+                pdf.text(`Dairy Number: ${formData.get('dairy-number')}`, 40, 145);
+                pdf.text(`Address: ${formData.get('address')}`, 40, 160);
+                pdf.text(`Customer Name: ${formData.get('customer-name')}`, 40, 175);
+                pdf.text(`Region: ${formData.get('region')}`, 40, 190);
+                pdf.text(`Farm Name: ${formData.get('farm-name')}`, 40, 205);
+                pdf.text(`Island: ${formData.get('island')}`, 40, 220);
+                pdf.text(`Visit Date: ${formData.get('visit-date')}`, 40, 235);
+                pdf.text(`Visit Type: ${formData.get('visit-type')}`, 40, 250);
+                pdf.text(`Inspection Start Time: ${formData.get('inspection-start-time')}`, 40, 265);
+                pdf.text(`Inspection End Time: ${formData.get('inspection-end-time')}`, 40, 280);
+                pdf.text(`Inspection Completed By: ${formData.get('inspection-completed-by')}`, 40, 295);
+                pdf.text(`Call Type: ${formData.get('call-type')}`, 40, 310);
+
+                // Add checklist items table
+                const checklistItemsDiv = document.getElementById('checklist-items').children;
+                const checklistTable = [];
+
+                for (let item of checklistItemsDiv) {
+                    const itemName = item.querySelector('label').textContent;
+                    const status = item.querySelector('select').value;
+                    const comments = item.querySelector('input[type="text"]').value;
+
+                    checklistTable.push([itemName, status, comments]);
+                }
+
+                pdf.autoTable({
+                    startY: 330,
+                    head: [['Item', 'Status', 'Comments']],
+                    body: checklistTable,
+                    styles: {
+                        fontSize: 10,
+                        cellPadding: 5,
+                    },
+                    headStyles: {
+                        fillColor: '#002B5C',
+                        textColor: '#FFFFFF'
+                    }
+                });
+
+                // Save the PDF locally
+                pdf.save('Dairy_Shed_Hygiene_Checklist.pdf');
+            } catch (error) {
+                console.error('Error generating the PDF:', error);
+            }
+        }
+    </script>
+</body>
+</html>
